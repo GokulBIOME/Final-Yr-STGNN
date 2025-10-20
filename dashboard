@@ -1,0 +1,72 @@
+@echo off
+REM BIOME Dashboard Startup Script for Windows
+REM This script starts the BIOME dashboard with proper configuration
+
+echo 🚀 Starting BIOME Dashboard...
+
+REM Check if virtual environment exists
+if not exist "venv" (
+    echo ⚠️ Virtual environment not found. Creating one...
+    python -m venv venv
+)
+
+REM Activate virtual environment
+echo 📦 Activating virtual environment...
+call venv\Scripts\activate.bat
+
+REM Install/upgrade dependencies
+echo 📥 Installing dependencies...
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+REM Check if API is running
+echo 🔍 Checking API status...
+set API_URL=http://localhost:8000
+
+REM Try to check API health
+curl -s "%API_URL%/health" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo ✅ API is running at %API_URL%
+) else (
+    echo ⚠️ API not running at %API_URL%
+    echo    Starting API in background...
+    
+    REM Start API in background
+    start /B uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    
+    REM Wait for API to start
+    echo ⏳ Waiting for API to start...
+    timeout /t 10 /nobreak >nul
+    
+    REM Check API again
+    curl -s "%API_URL%/health" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo ✅ API started successfully
+    ) else (
+        echo ⚠️ API may not be ready yet
+    )
+)
+
+REM Set environment variables
+set BIOME_API_BASE_URL=%API_URL%
+set STREAMLIT_SERVER_PORT=8501
+set STREAMLIT_SERVER_ADDRESS=0.0.0.0
+set STREAMLIT_SERVER_HEADLESS=true
+set STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+REM Create necessary directories
+if not exist "logs" mkdir logs
+if not exist "data" mkdir data
+if not exist "checkpoints" mkdir checkpoints
+
+REM Start dashboard
+echo 🎯 Starting BIOME Dashboard...
+echo 📊 Dashboard will be available at: http://localhost:8501
+echo 🔗 API will be available at: %API_URL%
+echo 📚 API docs will be available at: %API_URL%/docs
+echo.
+
+REM Start Streamlit dashboard
+streamlit run src/dashboard/enhanced_main.py --server.port 8501 --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
+
+pause
