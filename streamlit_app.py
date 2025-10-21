@@ -1,13 +1,11 @@
 """
-BIOME ST-GNN Streamlit App
-Minimal Streamlit application for deployment.
+BIOME ST-GNN Streamlit App - Simple Version
+Minimal Streamlit application for deployment without external dependencies.
 """
 
 import streamlit as st
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
 
 # Page configuration
 st.set_page_config(
@@ -75,6 +73,29 @@ def show_overview():
     })
     
     st.dataframe(activity_data, use_container_width=True)
+    
+    # System information
+    st.subheader("System Information")
+    
+    info_col1, info_col2 = st.columns(2)
+    
+    with info_col1:
+        st.info("""
+        **BIOME ST-GNN System**
+        - Spatio-Temporal Graph Neural Networks
+        - Dynamic Connectivity Analysis
+        - Real-time Processing
+        - Multi-modal Data Support
+        """)
+    
+    with info_col2:
+        st.success("""
+        **Features**
+        - Model Training & Inference
+        - Data Visualization
+        - System Monitoring
+        - Performance Analytics
+        """)
 
 def show_models():
     """Show models page."""
@@ -124,6 +145,18 @@ def show_models():
     with col3:
         if st.button("Save Model"):
             st.success("Model saved!")
+    
+    # Model performance
+    st.subheader("Model Performance")
+    
+    perf_data = pd.DataFrame({
+        'Epoch': range(1, 11),
+        'Training Loss': np.random.uniform(0.1, 0.5, 10),
+        'Validation Loss': np.random.uniform(0.15, 0.4, 10),
+        'Accuracy': np.random.uniform(0.8, 0.95, 10)
+    })
+    
+    st.dataframe(perf_data, use_container_width=True)
 
 def show_data():
     """Show data page."""
@@ -145,34 +178,32 @@ def show_data():
         # Generate sample data
         sample_data = np.random.randn(100, 10)
         
-        # Time series plot
-        fig = go.Figure()
-        for i in range(5):
-            fig.add_trace(go.Scatter(
-                y=sample_data[:, i],
-                mode='lines',
-                name=f'ROI {i+1}'
-            ))
+        # Show data statistics
+        st.subheader("Data Statistics")
+        stats_data = pd.DataFrame({
+            'ROI': [f'ROI_{i+1}' for i in range(10)],
+            'Mean': sample_data.mean(axis=0),
+            'Std': sample_data.std(axis=0),
+            'Min': sample_data.min(axis=0),
+            'Max': sample_data.max(axis=0)
+        })
         
-        fig.update_layout(
-            title="Sample ROI Time Series",
-            xaxis_title="Time Points",
-            yaxis_title="Signal Intensity"
-        )
+        st.dataframe(stats_data, use_container_width=True)
         
-        st.plotly_chart(fig, use_container_width=True)
+        # Show sample data
+        st.subheader("Sample Data (First 10 rows)")
+        sample_df = pd.DataFrame(sample_data[:10])
+        sample_df.columns = [f'ROI_{i+1}' for i in range(10)]
+        st.dataframe(sample_df, use_container_width=True)
         
         # Correlation matrix
         st.subheader("Correlation Matrix")
         corr_matrix = np.corrcoef(sample_data.T)
+        corr_df = pd.DataFrame(corr_matrix)
+        corr_df.columns = [f'ROI_{i+1}' for i in range(10)]
+        corr_df.index = [f'ROI_{i+1}' for i in range(10)]
         
-        fig_corr = px.imshow(
-            corr_matrix,
-            title="ROI Correlation Matrix",
-            color_continuous_scale='RdBu_r'
-        )
-        
-        st.plotly_chart(fig_corr, use_container_width=True)
+        st.dataframe(corr_df, use_container_width=True)
 
 def show_monitoring():
     """Show monitoring page."""
@@ -201,28 +232,47 @@ def show_monitoring():
         disk_usage = np.random.uniform(40, 85)
         st.metric("Disk Usage", f"{disk_usage:.1f}%")
     
-    # Performance charts
+    # Performance trends
     st.subheader("Performance Trends")
     
     # Generate sample performance data
-    time_points = pd.date_range('2024-01-01', periods=50, freq='H')
-    accuracy_data = np.cumsum(np.random.randn(50) * 0.1) + 0.9
+    time_points = pd.date_range('2024-01-01', periods=20, freq='H')
+    performance_data = pd.DataFrame({
+        'Time': time_points,
+        'CPU Usage': np.random.uniform(20, 80, 20),
+        'Memory Usage': np.random.uniform(30, 70, 20),
+        'GPU Usage': np.random.uniform(0, 90, 20),
+        'Accuracy': np.random.uniform(0.8, 0.95, 20)
+    })
     
-    fig_perf = go.Figure()
-    fig_perf.add_trace(go.Scatter(
-        x=time_points,
-        y=accuracy_data,
-        mode='lines+markers',
-        name='Model Accuracy'
-    ))
+    st.dataframe(performance_data, use_container_width=True)
     
-    fig_perf.update_layout(
-        title="Model Accuracy Over Time",
-        xaxis_title="Time",
-        yaxis_title="Accuracy"
-    )
+    # System logs
+    st.subheader("System Logs")
     
-    st.plotly_chart(fig_perf, use_container_width=True)
+    logs_data = pd.DataFrame({
+        'Timestamp': pd.date_range('2024-01-01', periods=15, freq='30min'),
+        'Level': np.random.choice(['INFO', 'WARNING', 'ERROR'], 15),
+        'Message': [
+            'Model training started',
+            'Data processing completed',
+            'Inference request received',
+            'Model saved successfully',
+            'System backup completed',
+            'High memory usage detected',
+            'GPU temperature normal',
+            'Training epoch completed',
+            'Data validation passed',
+            'Model evaluation finished',
+            'System restart scheduled',
+            'Performance metrics updated',
+            'User login successful',
+            'Database connection restored',
+            'Cache cleared successfully'
+        ]
+    })
+    
+    st.dataframe(logs_data, use_container_width=True)
 
 def show_inference():
     """Show inference page."""
@@ -249,7 +299,9 @@ def show_inference():
         sample_input = np.random.randn(sequence_length, num_rois)
         
         st.subheader("Sample Input Data")
-        st.dataframe(pd.DataFrame(sample_input), use_container_width=True)
+        input_df = pd.DataFrame(sample_input)
+        input_df.columns = [f'ROI_{i+1}' for i in range(num_rois)]
+        st.dataframe(input_df.head(10), use_container_width=True)
         
         # Run inference (simulated)
         if st.button("Run Inference"):
@@ -265,7 +317,20 @@ def show_inference():
                 
                 # Show results
                 st.subheader("Predictions")
-                st.dataframe(pd.DataFrame(predictions), use_container_width=True)
+                pred_df = pd.DataFrame(predictions)
+                pred_df.columns = [f'ROI_{i+1}' for i in range(num_rois)]
+                st.dataframe(pred_df.head(10), use_container_width=True)
+                
+                # Show prediction statistics
+                st.subheader("Prediction Statistics")
+                pred_stats = pd.DataFrame({
+                    'ROI': [f'ROI_{i+1}' for i in range(min(10, num_rois))],
+                    'Mean': predictions[:, :min(10, num_rois)].mean(axis=0),
+                    'Std': predictions[:, :min(10, num_rois)].std(axis=0),
+                    'Min': predictions[:, :min(10, num_rois)].min(axis=0),
+                    'Max': predictions[:, :min(10, num_rois)].max(axis=0)
+                })
+                st.dataframe(pred_stats, use_container_width=True)
                 
                 # Download results
                 csv = pd.DataFrame(predictions).to_csv(index=False)
